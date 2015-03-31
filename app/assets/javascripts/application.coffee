@@ -26,10 +26,20 @@ init = ->
       results: 50
       boundedBy: circleGeometry.getBounds()
     ).then (result) ->
+      $("#addresses").remove();
+      $("body").append('<table id="addresses"></table>')
       result.geoObjects.each (el, i) ->
-        myMap.geoObjects.add(el) if circleGeometry.contains el.geometry.getCoordinates()
+        coords = el.geometry.getCoordinates()
+        if circleGeometry.contains coords
+          myMap.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: el.properties._te.address});)
+          createMenuGroup(el, ymaps.coordSystem.geo.getDistance(circleGeometry.getCoordinates(), coords))
+
+
 
 ymaps.ready init
 
-
-
+createMenuGroup = (el, distance) ->
+  name = el.properties._te.name
+  address = el.properties._te.address
+  menuItem = $('<tr><td>' + name + '</td><td>' + address + '</td><td>' + Math.ceil(distance) + ' метров от центра круга</td></tr>')
+  menuItem.appendTo($('#addresses'));
